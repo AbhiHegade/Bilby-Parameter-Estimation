@@ -1,0 +1,37 @@
+def my_conversion_function(parameters):
+    """Custom conversion of sampling parameters to those passed to
+    ``my_lal_binary_neutron_star``. Impletemented from 
+    ``bilby.gw.conversion.convert_to_lal_binary_neutron_star_parameters``.
+    """
+    #print(parameters)
+    converted_parameters = parameters.copy()
+    added_keys = list()
+    # Hardcode redshift
+    REDSHIFT_GW170817 = 0.01
+    # Hard code m_0 value
+    M0 = 1.4
+    # source masses
+    mass_1_source = parameters['mass_1'] / (1 + REDSHIFT_GW170817)
+    mass_2_source = parameters['mass_2'] / (1 + REDSHIFT_GW170817)
+    logger.debug("Adding lambda values from inferred source frame masses")
+    lambda_0_0 = parameters['lambda_0_0']
+    converted_parameters['lambda_1'] = get_lambda_from_mass(
+        mass_1_source, lambda_0_0, M0=M0
+    )
+    converted_parameters['lambda_2'] = get_lambda_from_mass(
+        mass_2_source, lambda_0_0, M0=M0
+    )
+    logger.debug(
+            "Detector frame masses: "
+            "{:.3f}, {:.3f}".format(parameters['mass_1'],
+                                    parameters['mass_2'])
+    )
+    logger.debug(
+            "Inferred source frame mass/lambda_0_0/lambda_i: "
+            "{:.3f}, {:.3f}/{:.1f}/{:.1f}, {:.1f}".format(mass_1_source, mass_2_source,
+                                                          lambda_0_0,
+                                                          converted_parameters['lambda_1'],
+                                                          converted_parameters['lambda_2'])
+    )
+    added_keys += ['lambda_1', 'lambda_2']
+    return converted_parameters, added_keys
